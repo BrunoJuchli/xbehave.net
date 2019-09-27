@@ -15,7 +15,7 @@ namespace Xbehave.Test
     public class NestedStepFeature : Feature
     {
         [Scenario]
-        public void UnfinishedFeature(Type feature, ITestResultMessage[] results)
+        public void FaultyScenario(Type feature, ITestResultMessage[] results)
         {
             "Given a scenario with nested steps because \"the developer made a mistake\""
                 .x(() => feature = typeof(AScenarioWithNestedStepsBecauseTheDeveloperMadeAMistake));
