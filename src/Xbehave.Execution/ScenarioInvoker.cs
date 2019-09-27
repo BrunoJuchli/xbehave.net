@@ -153,37 +153,14 @@ namespace Xbehave.Execution
 
         private async Task<RunSummary> InvokeScenarioMethodAsync(object scenarioClassInstance)
         {
-            var backgroundStepDefinitions = new List<IStepDefinition>();
-            var scenarioStepDefinitions = new List<IStepDefinition>();
+            IReadOnlyList<IStepDefinition> backgroundStepDefinitions = null;
+            IReadOnlyList<IStepDefinition> scenarioStepDefinitions = null;
             await this.aggregator.RunAsync(async () =>
             {
-                CurrentThread.StepDefinitionCollector.BeginCollection();
-                try
-                {
-                    foreach (var backgroundMethod in this.scenario.TestCase.TestMethod.TestClass.Class
-                        .GetMethods(false)
-                        .Where(candidate => candidate.GetCustomAttributes(typeof(BackgroundAttribute)).Any())
-                        .Select(method => method.ToRuntimeMethod()))
-                    {
-                        await this.timer.AggregateAsync(() =>
-                            backgroundMethod.InvokeAsync(scenarioClassInstance, null));
-                    }
-                }
-                finally
-                {
-                    backgroundStepDefinitions.AddRange(CurrentThread.StepDefinitionCollector.EndCollection());
-                }
+                backgroundStepDefinitions = await this.CollectStepDefinitions(async () => await this.InvokeBackgroundMethods(scenarioClassInstance));
 
-                CurrentThread.StepDefinitionCollector.BeginCollection();
-                try
-                {
-                    await this.timer.AggregateAsync(() =>
-                        this.scenarioMethod.InvokeAsync(scenarioClassInstance, this.scenarioMethodArguments));
-                }
-                finally
-                {
-                    scenarioStepDefinitions.AddRange(CurrentThread.StepDefinitionCollector.EndCollection());
-                }
+                scenarioStepDefinitions = await this.CollectStepDefinitions(async () =>
+                    await this.InvokeScenarioMethods(scenarioClassInstance));
             });
 
             var runSummary = new RunSummary { Time = this.timer.Total };
@@ -195,8 +172,42 @@ namespace Xbehave.Execution
             return runSummary;
         }
 
+        private async Task<IReadOnlyList<IStepDefinition>> CollectStepDefinitions(Func<Task> invokeTestMethods)
+        {
+            var collector = CurrentThread.StepDefinitionCollector;
+            collector.BeginCollection();
+            IReadOnlyList<IStepDefinition> result;
+
+            try
+            {
+                await invokeTestMethods();
+            }
+            finally
+            {
+                result = collector.EndCollection();
+            }
+
+            return result;
+        }
+
+        private async Task InvokeScenarioMethods(object scenarioClassInstance) =>
+            await this.timer.AggregateAsync(() =>
+                this.scenarioMethod.InvokeAsync(scenarioClassInstance, this.scenarioMethodArguments));
+
+        private async Task InvokeBackgroundMethods(object scenarioClassInstance)
+        {
+            foreach (var backgroundMethod in this.scenario.TestCase.TestMethod.TestClass.Class
+                .GetMethods(false)
+                .Where(candidate => candidate.GetCustomAttributes(typeof(BackgroundAttribute)).Any())
+                .Select(method => method.ToRuntimeMethod()))
+            {
+                await this.timer.AggregateAsync(() =>
+                    backgroundMethod.InvokeAsync(scenarioClassInstance, null));
+            }
+        }
+
         private async Task<RunSummary> InvokeStepsAsync(
-            ICollection<IStepDefinition> backGroundStepDefinitions, ICollection<IStepDefinition> scenarioStepDefinitions)
+            IReadOnlyList<IStepDefinition> backGroundStepDefinitions, IReadOnlyList<IStepDefinition> scenarioStepDefinitions)
         {
             var scenarioTypeInfo = this.scenarioClass.GetTypeInfo();
             var filters = scenarioTypeInfo.Assembly.GetCustomAttributes(typeof(Attribute))

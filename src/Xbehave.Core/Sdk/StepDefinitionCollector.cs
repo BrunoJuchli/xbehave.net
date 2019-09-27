@@ -60,7 +60,7 @@ namespace Xbehave.Sdk
         {
             if (!this.IsCollecting)
             {
-                throw new InvalidOperationException("Collection hasn't been started.");
+                throw new InvalidOperationException("Collection hasn't been started or has already ended.");
             }
 
             var result = this.stepDefinitions;
