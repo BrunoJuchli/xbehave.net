@@ -1,20 +1,21 @@
-namespace Xbehave.Sdk
+namespace Xbehave.Execution
 {
     using System;
     using System.Threading;
+    using Xbehave.Sdk;
     using Xunit.Sdk;
 
-    public class StepReporter
+    public class StepReporter : IStepReporter
     {
         private readonly IMessageBus messageBus;
+        private readonly IScenario scenario;
         private readonly CancellationTokenSource cancellationTokenSource;
-        private readonly string scenarioName;
 
-        public StepReporter(IMessageBus messageBus, CancellationTokenSource cancellationTokenSource, string scenarioName)
+        public StepReporter(IMessageBus messageBus, IScenario scenario, CancellationTokenSource cancellationTokenSource)
         {
             this.messageBus = messageBus;
+            this.scenario = scenario;
             this.cancellationTokenSource = cancellationTokenSource;
-            this.scenarioName = scenarioName;
         }
 
 

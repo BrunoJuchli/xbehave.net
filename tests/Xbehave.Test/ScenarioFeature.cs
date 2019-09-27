@@ -2,7 +2,7 @@
 //  Copyright (c) xBehave.net contributors. All rights reserved.
 // </copyright>
 
-using Xunit.Sdk;
+using Xbehave.Execution;
 
 namespace Xbehave.Test
 {
@@ -37,9 +37,11 @@ namespace Xbehave.Test
         }
 
         [Scenario]
-        public void Foo(IMessageBus messageSink)
+        public void Foo(IStepReporter stepReporter)
         {
-            messageSink.Should().NotBeNull();
+            stepReporter.Success("any inner step");
+
+            stepReporter.Should().NotBeNull();
             //messageSink.QueueMessage()
             //messageSink.Should().NotBeNull();
         }
