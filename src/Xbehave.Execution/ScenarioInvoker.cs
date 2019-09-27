@@ -164,10 +164,10 @@ namespace Xbehave.Execution
             });
 
             var runSummary = new RunSummary { Time = this.timer.Total };
-            if (!this.aggregator.HasExceptions)
-            {
-                runSummary.Aggregate(await this.InvokeStepsAsync(backgroundStepDefinitions, scenarioStepDefinitions));
-            }
+            //if (!this.aggregator.HasExceptions)
+            //{
+            //    runSummary.Aggregate(await this.InvokeStepsAsync(backgroundStepDefinitions, scenarioStepDefinitions));
+            //}
 
             return runSummary;
         }
