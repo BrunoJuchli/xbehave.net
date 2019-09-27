@@ -41,11 +41,45 @@ namespace Xbehave.Test
         {
             stepReporter.Should().NotBeNull();
 
-            stepReporter.Success("StepOne");
-            stepReporter.Success("any inner step");
-            stepReporter.Ignored("ignored step");
-            stepReporter.Failure("failed step", new Exception("i created this exception"));
-            stepReporter.Success("passing step after exception");
+            int stepOneResult;
+            stepReporter.Begin("StepOne");
+            try
+            {
+                stepOneResult = this.StepOne();
+                stepReporter.Passed();
+            }
+            catch (Exception ex)
+            {
+                stepReporter.Failed(ex);
+                throw;
+            }
+
+            stepReporter.Begin("StepTwo");
+            try
+            {
+                this.StepTwo(stepOneResult);
+                stepReporter.Passed();
+            }
+            catch (Exception ex)
+            {
+                stepReporter.Failed(ex);
+                throw;
+            }
+
+            //stepsReporter.Success("any inner step");
+            //stepsReporter.Ignored("ignored step");
+            //stepsReporter.Failure("failed step", new Exception("i created this exception"));
+            //stepsReporter.Success("passing step after exception");
+        }
+
+        private int StepOne()
+        {
+            return 5;
+        }
+
+        private void StepTwo(int input)
+        {
+            throw new NotImplementedException();
         }
 
         [Scenario]

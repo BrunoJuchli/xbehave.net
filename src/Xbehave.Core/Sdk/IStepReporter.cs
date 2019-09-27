@@ -1,11 +1,13 @@
-using System;
-
 namespace Xbehave.Sdk
 {
+    using System;
+
     public interface IStepReporter
     {
-        void Success(string stepName);
-        void Ignored(string stepName);
-        void Failure(string stepName, Exception exception);
+        void Begin(string stepName);
+
+        void Failed(Exception exception);
+
+        void Passed();
     }
 }
