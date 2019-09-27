@@ -72,6 +72,13 @@ namespace Xbehave.Test
             //stepsReporter.Success("passing step after exception");
         }
 
+        // this example would be translated to the above version.
+        public void FooUnwoven()
+        {
+            int stepOneResult = this.StepOne();
+            this.StepTwo(stepOneResult);
+        }
+
         private int StepOne()
         {
             return 5;
