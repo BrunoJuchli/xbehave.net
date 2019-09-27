@@ -42,10 +42,10 @@ namespace Xbehave.Test
             stepReporter.Should().NotBeNull();
 
             stepReporter.Success("StepOne");
-            //stepReporter.Success("any inner step");
-            //stepReporter.Ignored("ignored step");
-            //stepReporter.Failure("failed step", new Exception("i created this exception"));
-            //stepReporter.Success("passing step after exception");
+            stepReporter.Success("any inner step");
+            stepReporter.Ignored("ignored step");
+            stepReporter.Failure("failed step", new Exception("i created this exception"));
+            stepReporter.Success("passing step after exception");
         }
 
         [Scenario]
