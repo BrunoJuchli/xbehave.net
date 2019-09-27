@@ -11,12 +11,13 @@ namespace Xbehave.Execution
     using System.Reflection;
     using System.Threading;
     using Xbehave.Execution.Extensions;
+    using Xbehave.Sdk;
     using Xunit.Abstractions;
     using Xunit.Sdk;
 
     public class ScenarioRunnerFactory
     {
-        private static readonly ITypeInfo messageBusType = Reflector.Wrap(typeof(IMessageBus));
+        private static readonly ITypeInfo stepReporterType = Reflector.Wrap(typeof(IStepReporter));
 
         private static readonly ITypeInfo objectType = Reflector.Wrap(typeof(object));
 
@@ -91,9 +92,10 @@ namespace Xbehave.Execution
                 this.scenarioOutlineDisplayName, typeArguments, parameters, arguments);
 
             var scenario = new Scenario(this.scenarioOutline, scenarioDisplayName);
+            var stepReporter = new StepReporter(this.messageBus, scenario, this.cancellationTokenSource);
 
             var extendedMethodArguments = Reflector
-                    .ConvertArguments(new object[] { this.messageBus }, new[] { typeof(IMessageBus) })
+                    .ConvertArguments(new object[] { stepReporter }, new[] { typeof(IStepReporter) })
                     .Concat(arguments.Select(argument => argument.Value))
                     .ToArray();
 
@@ -150,7 +152,7 @@ namespace Xbehave.Execution
                 ++missingArgumentIndex)
             {
                 var parameterType = parameters[missingArgumentIndex].ParameterType;
-                if (parameterType.Name == messageBusType.Name)
+                if (parameterType.Name == stepReporterType.Name)
                 {
                     continue;
                 }
