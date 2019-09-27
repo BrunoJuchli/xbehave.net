@@ -28,7 +28,7 @@ namespace Xbehave.Execution
         // the name must begin with the type name!
         public void Success(string stepName) =>
             this.messageBus.Queue(
-                new Step(this.scenario, "Xbehave.Test.ScenarioFeature.Foo() [1] Magic'"), test => new TestPassed(test, default, null), this.cancellationTokenSource);
+                new Step(this.scenario, $"{this.scenario.DisplayName} {stepName}"), test => new TestPassed(test, default, null), this.cancellationTokenSource);
 
 
         //public void Success(string stepName)
@@ -57,10 +57,13 @@ namespace Xbehave.Execution
 
         public void Ignored(string stepName) =>
             this.messageBus.Queue(
-                this.scenario, test => new TestSkipped(test, "don't know'"), this.cancellationTokenSource);
+                this.CreateStep(stepName), test => new TestSkipped(test, "don't know'"), this.cancellationTokenSource);
 
         public void Failure(string stepName, Exception exception) =>
             this.messageBus.Queue(
-                this.scenario, test => new TestFailed(test, default, "failed", exception), this.cancellationTokenSource);
+                this.CreateStep(stepName), test => new TestFailed(test, default, "failed", exception), this.cancellationTokenSource);
+
+        private IStep CreateStep(string stepName)
+            => new Step(this.scenario, $"{this.scenario.DisplayName} {stepName}");
     }
 }
