@@ -24,7 +24,7 @@ namespace Xbehave.Sdk
             {
                 if (!this.IsCollecting)
                 {
-                    throw new InvalidOperationException($"Steps may only be added by test methods. Nesting of steps is not supported. Adding steps on other threads is not supported, either."); // TODO: test adding a step on another thread!
+                    throw new InvalidOperationException($"Steps may only be added by test methods. Nesting of steps is not supported. Adding steps on other threads is not supported, either.");
                 }
 
                 return this.stepDefinitions;
