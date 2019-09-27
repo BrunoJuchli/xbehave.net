@@ -46,6 +46,19 @@ namespace Xbehave.Test
                 .x(() => results.Cast<ITestFailed>().Single().Messages.Single().Should().Be("I yielded before this."));
         }
 
+        [Scenario]
+        public void MultipleAsyncTaskSteps(Type feature, ITestResultMessage[] results)
+        {
+            "Given a scenario with multiple async task steps"
+                .x(() => feature = typeof(MultipleAsyncTaskStepsFollowingEachOther));
+
+            "When I run the scenario"
+                .x(() => results = this.Run<ITestResultMessage>(feature));
+
+            "Then all steps succeed"
+                .x(() => results.Should().HaveCount(2).And.OnlyContain(x => !(x is ITestFailed)));
+        }
+
         private static class AsyncStepWhichThrowsAfterYielding
         {
             [Scenario]
@@ -69,6 +82,19 @@ namespace Xbehave.Test
             {
                 await Task.Yield();
                 throw new InvalidOperationException("I yielded before this.");
+            }
+        }
+
+        private static class MultipleAsyncTaskStepsFollowingEachOther
+        {
+            [Scenario]
+            public static void Scenario()
+            {
+                "Given a first async task step"
+                    .x(async () => await Task.Yield());
+
+                "Followed by another"
+                    .x(async () => await Task.Yield());
             }
         }
     }
