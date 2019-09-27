@@ -21,14 +21,14 @@ namespace Xbehave.Execution
 
 
         // doesn't show test name - we're just part of the scenario.
-        public void Success(string stepName) =>
-            this.messageBus.Queue(
-                this.scenario, test => new TestPassed(test, default, "fabulous"), this.cancellationTokenSource);
-
-        // is being ignored
         //public void Success(string stepName) =>
         //    this.messageBus.Queue(
-        //        new Step(this.scenario, "successful step"), test => new TestPassed(test, default, "fabulous"), this.cancellationTokenSource);
+        //        this.scenario, test => new TestPassed(test, default, "fabulous"), this.cancellationTokenSource);
+
+        // the name must begin with the type name!
+        public void Success(string stepName) =>
+            this.messageBus.Queue(
+                new Step(this.scenario, "Xbehave.Test.ScenarioFeature.Foo() [1] Magic'"), test => new TestPassed(test, default, null), this.cancellationTokenSource);
 
 
         //public void Success(string stepName)
