@@ -22,7 +22,7 @@ namespace Xbehave.Execution
 
         public void Success(string stepName) =>
             this.messageBus.Queue(
-                new Step(this.scenario, stepName), test => new TestPassed(test, default, string.Empty), this.cancellationTokenSource);
+                this.scenario, test => new TestPassed(test, default, string.Empty), this.cancellationTokenSource);
 
         public void Ignored(string stepName)
         {
