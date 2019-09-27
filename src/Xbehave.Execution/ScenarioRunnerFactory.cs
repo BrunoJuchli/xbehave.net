@@ -58,7 +58,14 @@ namespace Xbehave.Execution
 
         public ScenarioRunner Create(object[] scenarioMethodArguments, string skipReason)
         {
+            bool hasStepReporter = false;
             var parameters = this.scenarioOutlineMethod.GetParameters().ToList();
+            if (parameters.FirstOrDefault()?.ParameterType?.Name == stepReporterType.Name)
+            {
+                hasStepReporter = true;
+                parameters = parameters.Skip(1).ToList();
+            }
+
             var typeParameters = this.scenarioOutlineMethod.GetGenericArguments().ToList();
 
             ITypeInfo[] typeArguments;
@@ -94,10 +101,15 @@ namespace Xbehave.Execution
             var scenario = new Scenario(this.scenarioOutline, scenarioDisplayName);
             var stepReporter = new StepReporter(this.messageBus, scenario, this.cancellationTokenSource);
 
-            var extendedMethodArguments = Reflector
+            var actualMethodArguments = arguments.Select(x => x.Value).ToArray();
+
+            if (hasStepReporter)
+            {
+                actualMethodArguments = Reflector
                     .ConvertArguments(new object[] { stepReporter }, new[] { typeof(IStepReporter) })
-                    .Concat(arguments.Select(argument => argument.Value))
+                    .Concat(actualMethodArguments)
                     .ToArray();
+            }
 
             return new ScenarioRunner(
                 scenario,
@@ -105,7 +117,7 @@ namespace Xbehave.Execution
                 this.scenarioClass,
                 this.constructorArguments,
                 scenarioMethod,
-                extendedMethodArguments,
+                actualMethodArguments,
                 skipReason,
                 this.beforeAfterScenarioAttributes,
                 new ExceptionAggregator(this.aggregator),
@@ -152,11 +164,6 @@ namespace Xbehave.Execution
                 ++missingArgumentIndex)
             {
                 var parameterType = parameters[missingArgumentIndex].ParameterType;
-                if (parameterType.Name == stepReporterType.Name)
-                {
-                    continue;
-                }
-
                 if (parameterType.IsGenericParameter)
                 {
                     ITypeInfo concreteType = null;
