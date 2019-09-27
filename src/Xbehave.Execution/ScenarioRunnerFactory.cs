@@ -16,6 +16,8 @@ namespace Xbehave.Execution
 
     public class ScenarioRunnerFactory
     {
+        private static readonly ITypeInfo messageBusType = Reflector.Wrap(typeof(IMessageBus));
+
         private static readonly ITypeInfo objectType = Reflector.Wrap(typeof(object));
 
         private readonly IXunitTestCase scenarioOutline;
@@ -90,13 +92,18 @@ namespace Xbehave.Execution
 
             var scenario = new Scenario(this.scenarioOutline, scenarioDisplayName);
 
+            var extendedMethodArguments = Reflector
+                    .ConvertArguments(new object[] { this.messageBus }, new[] { typeof(IMessageBus) })
+                    .Concat(arguments.Select(argument => argument.Value))
+                    .ToArray();
+
             return new ScenarioRunner(
                 scenario,
                 this.messageBus,
                 this.scenarioClass,
                 this.constructorArguments,
                 scenarioMethod,
-                arguments.Select(argument => argument.Value).ToArray(),
+                extendedMethodArguments,
                 skipReason,
                 this.beforeAfterScenarioAttributes,
                 new ExceptionAggregator(this.aggregator),
@@ -143,6 +150,11 @@ namespace Xbehave.Execution
                 ++missingArgumentIndex)
             {
                 var parameterType = parameters[missingArgumentIndex].ParameterType;
+                if (parameterType.Name == messageBusType.Name)
+                {
+                    continue;
+                }
+
                 if (parameterType.IsGenericParameter)
                 {
                     ITypeInfo concreteType = null;

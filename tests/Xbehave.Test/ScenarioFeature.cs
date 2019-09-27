@@ -2,6 +2,8 @@
 //  Copyright (c) xBehave.net contributors. All rights reserved.
 // </copyright>
 
+using Xunit.Sdk;
+
 namespace Xbehave.Test
 {
     using System;
@@ -32,6 +34,14 @@ namespace Xbehave.Test
             results.Length.Should().Be(3);
             results.Take(2).Should().ContainItemsAssignableTo<ITestPassed>();
             results.Skip(2).Should().ContainItemsAssignableTo<ITestFailed>();
+        }
+
+        [Scenario]
+        public void Foo(IMessageBus messageSink)
+        {
+            messageSink.Should().NotBeNull();
+            //messageSink.QueueMessage()
+            //messageSink.Should().NotBeNull();
         }
 
         [Scenario]
