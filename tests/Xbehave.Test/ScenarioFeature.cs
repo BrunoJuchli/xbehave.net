@@ -39,11 +39,11 @@ namespace Xbehave.Test
         [Scenario]
         public void Foo(IStepReporter stepReporter)
         {
-            stepReporter.Success("any inner step");
-
             stepReporter.Should().NotBeNull();
-            //messageSink.QueueMessage()
-            //messageSink.Should().NotBeNull();
+
+            stepReporter.Success("any inner step");
+            stepReporter.Success("any inner step");
+            stepReporter.Success("any inner step");
         }
 
         [Scenario]
