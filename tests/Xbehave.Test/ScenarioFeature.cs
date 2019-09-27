@@ -79,6 +79,22 @@ namespace Xbehave.Test
             this.StepTwo(stepOneResult);
         }
 
+        // TODO: think about:
+        // instead of using weaving, how about importing keywords, and then doing:
+        // Do(() => this.StartPlc()) --> takes an expression which is evaluated & the text taken from
+        // --> allows nesting, as long as we add items to the base via ThreadLocal.
+        // --> what text do we convert assertions to? Assert(() => this.robotState.Should.Be(RobotState.Ready))
+        // --> How do we handle return values? Probably: var result = Do(() => this.RetrieveGripperState())
+
+        // TODO: think about:
+        // how can we go about configuring whether to abort or not? Can we put attributes on method calls?
+        // complexity / performance: when not just weaving the [Scenario] methods call it get's complicated pretty quickly.
+        // natural weaving borders: assemblies. So we cannot create bubbles for methods in other assemblies.
+        // limitations: it's probably not so easy to convert verfications to a nice, short text. Like "robot should be busy then ready again" => this.TrackedRobotStates.Should().EndWith(RobotState.Busy, RobotState.Ready)
+        // best we could do - but needing quite some logic: TrackedRobotStates should EndWith (Busy, Ready)
+        // TODO: think about a way to configure replacement texts in case the method called is not expressive by itself
+        // OR is it acceptable to wrap the shoulds in methods like "RobotShouldBeBusyThenReadyAgain"?!
+
         private int StepOne()
         {
             return 5;
