@@ -26,34 +26,33 @@ namespace Xbehave.Execution
         //        this.scenario, test => new TestPassed(test, default, "fabulous"), this.cancellationTokenSource);
 
         // the name must begin with the type name!
-        public void Success(string stepName) =>
-            this.messageBus.Queue(
-                new Step(this.scenario, $"{this.scenario.DisplayName} {stepName}"), test => new TestPassed(test, default, null), this.cancellationTokenSource);
+        //public void Success(string stepName) =>
+        //    this.messageBus.Queue(
+        //        new Step(this.scenario, $"{this.scenario.DisplayName} {stepName}"), test => new TestPassed(test, default, null), this.cancellationTokenSource);
 
 
-        //public void Success(string stepName)
-        //{
-        //    this.messageBus.QueueMessage(new TestStarting(this.scenario));
+        public void Success(string stepName)
+        {
+            var step = this.CreateStep(stepName);
+            this.messageBus.QueueMessage(new TestStarting(step));
 
-        //    var step = new Step(this.scenario, stepName);
-        //    this.messageBus.QueueMessage(new TestStarting(step));
+            var innerStep = this.CreateStep($"{stepName} [0] Foo");
+            this.messageBus.QueueMessage(new TestStarting(innerStep));
 
-        //    var innerStep = new Step(this.scenario, "innerStep");
+            this.messageBus.QueueMessage(new TestPassed(innerStep, default, "inner"));
 
-        //    this.messageBus.QueueMessage(new TestPassed(step, default, "fabulous"));
+            this.messageBus.QueueMessage(new TestFinished(innerStep, default, null));
 
-        //    this.messageBus.QueueMessage(new TestFinished(step, default, null));
+            this.messageBus.QueueMessage(new TestPassed(step, default, "outer"));
 
-        //    this.messageBus.QueueMessage(new TestStarting(innerStep));
+            this.messageBus.QueueMessage(new TestFinished(step, default, null));
 
-        //    this.messageBus.QueueMessage(new TestPassed(innerStep, default, "inner test"));
+            this.messageBus.QueueMessage(new TestStarting(innerStep));
 
-        //    this.messageBus.QueueMessage(new TestFinished(innerStep, default, "inner test done"));
+            this.messageBus.QueueMessage(new TestPassed(innerStep, default, "inner"));
 
-        //    this.messageBus.QueueMessage(new TestPassed(this.scenario, default, null));
-
-        //    this.messageBus.QueueMessage(new TestFinished(this.scenario, default, null));
-        //}
+            this.messageBus.QueueMessage(new TestFinished(innerStep, default, null));
+        }
 
         public void Ignored(string stepName) =>
             this.messageBus.Queue(
