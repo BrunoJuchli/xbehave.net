@@ -2,6 +2,7 @@ namespace Xbehave.Execution
 {
     using System;
     using System.Threading;
+    using Xbehave.Execution.Extensions;
     using Xbehave.Sdk;
     using Xunit.Sdk;
 
@@ -19,10 +20,9 @@ namespace Xbehave.Execution
         }
 
 
-        public void Success(string stepName)
-        {
-
-        }
+        public void Success(string stepName) =>
+            this.messageBus.Queue(
+                this.scenario, test => new TestPassed(test, default, string.Empty), this.cancellationTokenSource);
 
         public void Ignored(string stepName)
         {
