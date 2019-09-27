@@ -157,7 +157,7 @@ namespace Xbehave.Execution
             var scenarioStepDefinitions = new List<IStepDefinition>();
             await this.aggregator.RunAsync(async () =>
             {
-                CurrentThread.BeginCollection();
+                CurrentThread.StepDefinitionCollector.BeginCollection();
                 try
                 {
                     foreach (var backgroundMethod in this.scenario.TestCase.TestMethod.TestClass.Class
@@ -171,10 +171,10 @@ namespace Xbehave.Execution
                 }
                 finally
                 {
-                    backgroundStepDefinitions.AddRange(CurrentThread.EndCollection());
+                    backgroundStepDefinitions.AddRange(CurrentThread.StepDefinitionCollector.EndCollection());
                 }
 
-                CurrentThread.BeginCollection();
+                CurrentThread.StepDefinitionCollector.BeginCollection();
                 try
                 {
                     await this.timer.AggregateAsync(() =>
@@ -182,7 +182,7 @@ namespace Xbehave.Execution
                 }
                 finally
                 {
-                    scenarioStepDefinitions.AddRange(CurrentThread.EndCollection());
+                    scenarioStepDefinitions.AddRange(CurrentThread.StepDefinitionCollector.EndCollection());
                 }
             });
 
