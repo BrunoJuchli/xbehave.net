@@ -11,11 +11,14 @@ namespace Xbehave.Execution
     using System.Reflection;
     using System.Threading;
     using Xbehave.Execution.Extensions;
+    using Xbehave.Sdk;
     using Xunit.Abstractions;
     using Xunit.Sdk;
 
     public class ScenarioRunnerFactory
     {
+        private static readonly ITypeInfo stepReporterType = Reflector.Wrap(typeof(IStepReporter));
+
         private static readonly ITypeInfo objectType = Reflector.Wrap(typeof(object));
 
         private readonly IXunitTestCase scenarioOutline;
@@ -55,7 +58,14 @@ namespace Xbehave.Execution
 
         public ScenarioRunner Create(object[] scenarioMethodArguments, string skipReason)
         {
+            bool hasStepReporter = false;
             var parameters = this.scenarioOutlineMethod.GetParameters().ToList();
+            if (parameters.FirstOrDefault()?.ParameterType?.Name == stepReporterType.Name)
+            {
+                hasStepReporter = true;
+                parameters = parameters.Skip(1).ToList();
+            }
+
             var typeParameters = this.scenarioOutlineMethod.GetGenericArguments().ToList();
 
             ITypeInfo[] typeArguments;
@@ -89,6 +99,17 @@ namespace Xbehave.Execution
                 this.scenarioOutlineDisplayName, typeArguments, parameters, arguments);
 
             var scenario = new Scenario(this.scenarioOutline, scenarioDisplayName);
+            var stepReporter = new StepReporter(this.messageBus, scenario, this.cancellationTokenSource);
+
+            var actualMethodArguments = arguments.Select(x => x.Value).ToArray();
+
+            if (hasStepReporter)
+            {
+                actualMethodArguments = Reflector
+                    .ConvertArguments(new object[] { stepReporter }, new[] { typeof(IStepReporter) })
+                    .Concat(actualMethodArguments)
+                    .ToArray();
+            }
 
             return new ScenarioRunner(
                 scenario,
@@ -96,7 +117,7 @@ namespace Xbehave.Execution
                 this.scenarioClass,
                 this.constructorArguments,
                 scenarioMethod,
-                arguments.Select(argument => argument.Value).ToArray(),
+                actualMethodArguments,
                 skipReason,
                 this.beforeAfterScenarioAttributes,
                 new ExceptionAggregator(this.aggregator),

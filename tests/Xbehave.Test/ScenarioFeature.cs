@@ -2,6 +2,8 @@
 //  Copyright (c) xBehave.net contributors. All rights reserved.
 // </copyright>
 
+using Xbehave.Execution;
+
 namespace Xbehave.Test
 {
     using System;
@@ -32,6 +34,75 @@ namespace Xbehave.Test
             results.Length.Should().Be(3);
             results.Take(2).Should().ContainItemsAssignableTo<ITestPassed>();
             results.Skip(2).Should().ContainItemsAssignableTo<ITestFailed>();
+        }
+
+        [Scenario]
+        public void Foo(IStepReporter stepReporter)
+        {
+            stepReporter.Should().NotBeNull();
+
+            int stepOneResult;
+            stepReporter.Begin("StepOne");
+            try
+            {
+                stepOneResult = this.StepOne();
+                stepReporter.Passed();
+            }
+            catch (Exception ex)
+            {
+                stepReporter.Failed(ex);
+                throw;
+            }
+
+            stepReporter.Begin("StepTwo");
+            try
+            {
+                this.StepTwo(stepOneResult);
+                stepReporter.Passed();
+            }
+            catch (Exception ex)
+            {
+                stepReporter.Failed(ex);
+                throw;
+            }
+
+            //stepsReporter.Success("any inner step");
+            //stepsReporter.Ignored("ignored step");
+            //stepsReporter.Failure("failed step", new Exception("i created this exception"));
+            //stepsReporter.Success("passing step after exception");
+        }
+
+        // this example would be translated to the above version.
+        public void FooUnwoven()
+        {
+            int stepOneResult = this.StepOne();
+            this.StepTwo(stepOneResult);
+        }
+
+        // TODO: think about:
+        // instead of using weaving, how about importing keywords, and then doing:
+        // Do(() => this.StartPlc()) --> takes an expression which is evaluated & the text taken from
+        // --> allows nesting, as long as we add items to the base via ThreadLocal.
+        // --> what text do we convert assertions to? Assert(() => this.robotState.Should.Be(RobotState.Ready))
+        // --> How do we handle return values? Probably: var result = Do(() => this.RetrieveGripperState())
+
+        // TODO: think about:
+        // how can we go about configuring whether to abort or not? Can we put attributes on method calls?
+        // complexity / performance: when not just weaving the [Scenario] methods call it get's complicated pretty quickly.
+        // natural weaving borders: assemblies. So we cannot create bubbles for methods in other assemblies.
+        // limitations: it's probably not so easy to convert verfications to a nice, short text. Like "robot should be busy then ready again" => this.TrackedRobotStates.Should().EndWith(RobotState.Busy, RobotState.Ready)
+        // best we could do - but needing quite some logic: TrackedRobotStates should EndWith (Busy, Ready)
+        // TODO: think about a way to configure replacement texts in case the method called is not expressive by itself
+        // OR is it acceptable to wrap the shoulds in methods like "RobotShouldBeBusyThenReadyAgain"?!
+
+        private int StepOne()
+        {
+            return 5;
+        }
+
+        private void StepTwo(int input)
+        {
+            throw new NotImplementedException();
         }
 
         [Scenario]
